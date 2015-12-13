@@ -173,5 +173,17 @@
     <ClInclude Include="LuaEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="exports\BaseLuaExport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exports\Exports.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exports\LUAInterfaces.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exports\LUAEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -166,6 +166,10 @@
     <ClCompile Include="sdk\VMT.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="exports\BaseLuaExport.h" />
+    <ClInclude Include="exports\Exports.h" />
+    <ClInclude Include="exports\LUAEngine.h" />
+    <ClInclude Include="exports\LUAInterfaces.h" />
     <ClInclude Include="LuaBridge\detail\CFunctions.h" />
     <ClInclude Include="LuaBridge\detail\ClassInfo.h" />
     <ClInclude Include="LuaBridge\detail\Constructor.h" />

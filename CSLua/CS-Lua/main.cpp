@@ -4,6 +4,9 @@
 #include <LuaBridge.h>
 #include "LuaEngine.h"
 #include "sdk\InterfaceManager.hpp"
+#include "exports\Exports.h"
+
+LUAInterfaces g_Interfaces;
 
 typedef void(__cdecl *MsgFn)(char const* pMsg, va_list);
 void Msg(char const* msg)
@@ -26,6 +29,29 @@ void RegEverything(lua_State* L)
 	getGlobalNamespace(L)
 		.beginNamespace("Game")
 			.addFunction("Msg", &Msg)
+			.addVariable("Interfaces", &g_Interfaces, false)
+			.beginClass<LUAInterfaces>("__Interfaces")
+				.addFunction("GetEngine", &LUAInterfaces::GetEngine)
+			.endClass()
+			.beginClass<LUAEngine>("Engine")
+				.addFunction("GetScreenSize", &LUAEngine::GetScreenSize)
+			.endClass()
+			.beginClass<Vector>("Vector")
+				.addConstructor<void(*)()>()
+				.addConstructor<void(*)(float, float, float)>()
+				.addData("x", &Vector::x)
+				.addData("y", &Vector::y)
+				.addData("z", &Vector::z)
+				.addFunction("Length", &Vector::Length)
+				.addFunction("Angle", &Vector::Angle)
+				.addFunction("Distance", &Vector::DistTo)
+			.endClass()
+			.beginClass<Vec2>("Vec2")
+				.addConstructor<void(*)()>()
+				.addConstructor<void(*)(float, float)>()
+				.addData("x", &Vec2::x)
+				.addData("y", &Vec2::y)
+			.endClass()
 		.endNamespace();
 }
 
