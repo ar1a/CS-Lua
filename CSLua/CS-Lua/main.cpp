@@ -5,6 +5,7 @@
 #include "LuaEngine.h"
 #include "sdk\InterfaceManager.hpp"
 #include "exports\Exports.h"
+#include "sdk\cmove.h"
 
 LUAInterfaces g_Interfaces;
 
@@ -28,13 +29,17 @@ void RegEverything(lua_State* L)
 	using namespace luabridge;
 	getGlobalNamespace(L)
 		.beginNamespace("Game")
-			.addFunction("Msg", &Msg)
+			.addFunction("Msg", &Msg)			
 			.addVariable("Interfaces", &g_Interfaces, false)
 			.beginClass<LUAInterfaces>("__Interfaces")
 				.addFunction("GetEngine", &LUAInterfaces::GetEngine)
+				.addFunction("GetEntityList", &LUAInterfaces::GetEntityList)
 			.endClass()
-			.beginClass<LUAEngine>("Engine")
+			.beginClass<LUAEngine>("EngineInterface")
 				.addFunction("GetScreenSize", &LUAEngine::GetScreenSize)
+				.addFunction("GetLocalPlayer", &LUAEngine::GetLocalPlayer)
+				.addProperty("viewangles", &LUAEngine::GetViewAngles, &LUAEngine::SetViewAngles)
+				.addFunction("Cmd", &LUAEngine::Cmd)
 			.endClass()
 			.beginClass<Vector>("Vector")
 				.addConstructor<void(*)()>()
@@ -52,21 +57,59 @@ void RegEverything(lua_State* L)
 				.addData("x", &Vec2::x)
 				.addData("y", &Vec2::y)
 			.endClass()
+			.beginClass<LuaUserCmd>("UserCmd")
+				.addProperty("buttons", &LuaUserCmd::GetButtons, &LuaUserCmd::SetButtons)
+				.addProperty("viewangles", &LuaUserCmd::GetViewAngles, &LuaUserCmd::SetViewAngles)
+				.addFunction("KeyDown", &LuaUserCmd::KeyDown)
+				.addFunction("AddButton", &LuaUserCmd::AddButton)
+				.addFunction("RemoveButton", &LuaUserCmd::RemoveButton)
+			.endClass()
+		.beginClass<LUAEntity>("Entity")
+			.addFunction("IsValid", &LUAEntity::IsValid)
+			.addFunction("GetPos", &LUAEntity::GetPos)
+			.addFunction("GetHealth", &LUAEntity::GetHealth)
+			.addFunction("GetFlags", &LUAEntity::GetFlags)
+			.addFunction("GetShootPos", &LUAEntity::GetShootPos)
+			.addFunction("IsDormant", &LUAEntity::IsDormant)
+			.addFunction("IsAlive", &LUAEntity::IsAlive)
+			.addFunction("GetTeam", &LUAEntity::GetTeam)
+			.addFunction("GetPunch", &LUAEntity::GetPunch)
+			.addFunction("IsReal", &LUAEntity::IsReal)
+		.endClass()
+		.beginClass<LUAEntityList>("EntityList")
+			.addFunction("GetEntity", &LUAEntityList::GetEntity)
+			.addFunction("GetHighestEntityIndex", &LUAEntityList::GetHighestEntityIndex)
+		.endClass()
 		.endNamespace();
+
+	g_pLuaEngine->ExecuteString("bit = bit32");
 }
 
 void StartThread()
 {
 	InterfaceManager::GetInterfaces();
+	g_pEngine->ClientCmd("clear");
+
+	VMT* client = new VMT(g_pClientMode);
+	client->init();
+	client->setTableHook();
+	client->hookFunction(24, hkCreateMove);
+
 
 	RegEverything(g_pLuaEngine->L());
-
-	Msg("CS:Lua v2 loaded!\n");
+	Msg("\n\n\n    _____  _____  _                        ___  \n \
+  / ____|/ ____|| |                      |__ \\ \n \
+ | |    | (___(_) |    _   _  __ _  __   __ ) |\n \
+ | |     \\___ \\ | |   | | | |/ _` | \\ \\ / // / \n \
+ | |____ ____) || |___| |_| | (_| |  \\ V // /_ \n \
+  \\_____|_____(_)______\\__,_|\\__,_|   \\_/|____|\n\n\n");
+	Msg("CS:Lua v2 loaded! Enjoy!\n");
 	while (1)
 	{
 		if (GetAsyncKeyState(VK_HOME) & 0x8000)
 		{
 			g_pLuaEngine->ExecuteFile("hook.lua");
+			Msg("---------------------\nhook.lua loaded\n---------------------\n");
 			g_pLuaEngine->ExecuteFile("exec.lua");
 			Sleep(300);
 		}

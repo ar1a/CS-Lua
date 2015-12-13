@@ -4,7 +4,9 @@
 #include "CBaseEntity.h"
 #include "interface\EntityList.h"
 #include "interface\Engine.h"
-#include "exports\Exports.h"
+#include "../exports\Exports.h"
+#include <LuaBridge.h>
+#include "../LuaEngine.h"
 inline void ClampAngle(Vector& qaAng)
 {
 	if (qaAng[0] > 89.0f)

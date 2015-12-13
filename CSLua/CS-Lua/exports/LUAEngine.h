@@ -14,6 +14,28 @@ public:
 		return Vec2(w, h);
 	}
 
+	int GetLocalPlayer()
+	{
+		return m_pEngine->GetLocalPlayer();
+	}
+
+	void SetViewAngles(Vector angles)
+	{
+		m_pEngine->SetViewAngles(angles);
+	}
+
+	Vector GetViewAngles() const
+	{
+		Vector retn;
+		m_pEngine->GetViewAngles(retn);
+		return retn;
+	}
+
+	void Cmd(const char* str)
+	{
+		m_pEngine->ClientCmd(str);
+	}
+
 
 private:
 	CEngine* m_pEngine;

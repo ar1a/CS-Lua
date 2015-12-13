@@ -185,5 +185,14 @@
     <ClInclude Include="exports\LUAEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="exports\LUAUserCmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exports\LUAEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exports\LUAEntityList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
