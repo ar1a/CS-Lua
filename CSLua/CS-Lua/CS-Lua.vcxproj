@@ -172,7 +172,9 @@
     <ClInclude Include="exports\LUAEntity.h" />
     <ClInclude Include="exports\LUAEntityList.h" />
     <ClInclude Include="exports\LUAInterfaces.h" />
+    <ClInclude Include="exports\LUATrace.h" />
     <ClInclude Include="exports\LUAUserCmd.h" />
+    <ClInclude Include="exports\LUAUtils.h" />
     <ClInclude Include="LuaBridge\detail\CFunctions.h" />
     <ClInclude Include="LuaBridge\detail\ClassInfo.h" />
     <ClInclude Include="LuaBridge\detail\Constructor.h" />

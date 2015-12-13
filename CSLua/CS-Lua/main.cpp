@@ -8,6 +8,7 @@
 #include "sdk\cmove.h"
 
 LUAInterfaces g_Interfaces;
+LUAUtils g_Utils;
 
 typedef void(__cdecl *MsgFn)(char const* pMsg, va_list);
 void Msg(char const* msg)
@@ -31,9 +32,11 @@ void RegEverything(lua_State* L)
 		.beginNamespace("Game")
 			.addFunction("Msg", &Msg)			
 			.addVariable("Interfaces", &g_Interfaces, false)
+			.addVariable("Utils", &g_Utils, false)
 			.beginClass<LUAInterfaces>("__Interfaces")
 				.addFunction("GetEngine", &LUAInterfaces::GetEngine)
 				.addFunction("GetEntityList", &LUAInterfaces::GetEntityList)
+				.addFunction("GetTrace", &LUAInterfaces::GetTrace)
 			.endClass()
 			.beginClass<LUAEngine>("EngineInterface")
 				.addFunction("GetScreenSize", &LUAEngine::GetScreenSize)
@@ -79,6 +82,22 @@ void RegEverything(lua_State* L)
 		.beginClass<LUAEntityList>("EntityList")
 			.addFunction("GetEntity", &LUAEntityList::GetEntity)
 			.addFunction("GetHighestEntityIndex", &LUAEntityList::GetHighestEntityIndex)
+		.endClass()
+		.beginClass<LUATrace>("EngineTrace")
+			.addFunction("Trace", &LUATrace::TraceRay)
+		.endClass()
+		.beginClass<LUAtrace_t>("trace_t")
+			.addFunction("DidHit", &LUAtrace_t::DidHit)
+			.addFunction("DidHitEntity", &LUAtrace_t::DidHitEntity)
+			.addFunction("GetHitbox", &LUAtrace_t::GetHitbox)
+			.addFunction("IsVisible", &LUAtrace_t::IsVisible)
+			.addFunction("GetEndPos", &LUAtrace_t::GetEndPos)
+			.addFunction("GetEntity", &LUAtrace_t::GetEntity)
+		.endClass()
+		.beginClass<LUAUtils>("__Utils")
+			.addFunction("WorldToScreen", &LUAUtils::WorldToScreen)
+			.addFunction("IsPlayer", &LUAUtils::IsPlayer)
+			.addFunction("GetHitboxPos", &LUAUtils::GetHitboxPosition)
 		.endClass()
 		.endNamespace();
 

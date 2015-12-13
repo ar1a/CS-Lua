@@ -4,3 +4,5 @@
 #include "LUAUserCmd.h"
 #include "LUAEntity.h"
 #include "LUAEntityList.h"
+#include "LUATrace.h"
+#include "LUAUtils.h"
