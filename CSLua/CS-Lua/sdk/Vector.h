@@ -242,6 +242,18 @@ public:
 
 		return angles;
 	}
+	Vector sub(Vector& const v)
+	{
+		return (*this - v);
+	}
+	Vector mul(Vector& const v)
+	{
+		return (*this * v);
+	}
+	Vector div(Vector& const v)
+	{
+		return (*this / v);
+	}
 };
 
 void VectorCopy(const Vector& src, Vector& dst);

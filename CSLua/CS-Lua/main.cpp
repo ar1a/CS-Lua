@@ -6,6 +6,7 @@
 #include "sdk\InterfaceManager.hpp"
 #include "exports\Exports.h"
 #include "sdk\cmove.h"
+#include "sdk\InputManager.h"
 
 LUAInterfaces g_Interfaces;
 LUAUtils g_Utils;
@@ -47,6 +48,11 @@ void RegEverything(lua_State* L)
 			.beginClass<Vector>("Vector")
 				.addConstructor<void(*)()>()
 				.addConstructor<void(*)(float, float, float)>()
+				.addFunction("__eq", &Vector::operator==)
+				.addFunction("__add", &Vector::operator+)
+				.addFunction("__sub", &Vector::sub)
+				.addFunction("__mul", &Vector::mul)
+				.addFunction("__div", &Vector::div)
 				.addData("x", &Vector::x)
 				.addData("y", &Vector::y)
 				.addData("z", &Vector::z)
@@ -99,13 +105,29 @@ void RegEverything(lua_State* L)
 			.addFunction("IsPlayer", &LUAUtils::IsPlayer)
 			.addFunction("GetHitboxPos", &LUAUtils::GetHitboxPosition)
 		.endClass()
+		.beginClass<KeyData>("KeyData")
+			.addData("key", &KeyData::key, false)
+			.addProperty("down", &KeyData::IsDown)
+		.endClass()
 		.endNamespace();
 
 	g_pLuaEngine->ExecuteString("bit = bit32");
 }
 
+bool Keyboard(const KeyData &data)
+{
+	using namespace luabridge;
+	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
+	if (hook["Call"].isFunction())
+		hook["Call"]("Key", data);
+	else
+		printf("ERR: hook.Call not found!\n");
+}
+
 void StartThread()
 {
+	inputmanager::Init();
+
 	InterfaceManager::GetInterfaces();
 	g_pEngine->ClientCmd("clear");
 
