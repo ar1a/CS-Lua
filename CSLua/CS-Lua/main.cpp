@@ -8,9 +8,12 @@
 #include "sdk\cmove.h"
 #include "sdk\InputManager.h"
 #include "exports\LuaFiles.h"
+#include "sdk\interface\Panel.h"
+#include "Drawing.h"
 
 LUAInterfaces g_Interfaces;
 LUAUtils g_Utils;
+CDrawing g_Drawing;
 
 typedef void(__cdecl *MsgFn)(char const* pMsg, va_list);
 void Msg(char const* msg)
@@ -35,6 +38,7 @@ void RegEverything(lua_State* L)
 			.addFunction("Msg", &Msg)			
 			.addVariable("Interfaces", &g_Interfaces, false)
 			.addVariable("Utils", &g_Utils, false)
+			.addVariable("Drawing", &g_Drawing, false)
 			.beginClass<LUAInterfaces>("__Interfaces")
 				.addFunction("GetEngine", &LUAInterfaces::GetEngine)
 				.addFunction("GetEntityList", &LUAInterfaces::GetEntityList)
@@ -74,44 +78,52 @@ void RegEverything(lua_State* L)
 				.addFunction("AddButton", &LuaUserCmd::AddButton)
 				.addFunction("RemoveButton", &LuaUserCmd::RemoveButton)
 			.endClass()
-		.beginClass<LUAEntity>("Entity")
-			.addFunction("IsValid", &LUAEntity::IsValid)
-			.addFunction("GetPos", &LUAEntity::GetPos)
-			.addFunction("GetHealth", &LUAEntity::GetHealth)
-			.addFunction("GetFlags", &LUAEntity::GetFlags)
-			.addFunction("GetShootPos", &LUAEntity::GetShootPos)
-			.addFunction("IsDormant", &LUAEntity::IsDormant)
-			.addFunction("IsAlive", &LUAEntity::IsAlive)
-			.addFunction("GetTeam", &LUAEntity::GetTeam)
-			.addFunction("GetPunch", &LUAEntity::GetPunch)
-			.addFunction("IsReal", &LUAEntity::IsReal)
-		.endClass()
-		.beginClass<LUAEntityList>("EntityList")
-			.addFunction("GetEntity", &LUAEntityList::GetEntity)
-			.addFunction("GetHighestEntityIndex", &LUAEntityList::GetHighestEntityIndex)
-		.endClass()
-		.beginClass<LUATrace>("EngineTrace")
-			.addFunction("Trace", &LUATrace::TraceRay)
-		.endClass()
-		.beginClass<LUAtrace_t>("trace_t")
-			.addFunction("DidHit", &LUAtrace_t::DidHit)
-			.addFunction("DidHitEntity", &LUAtrace_t::DidHitEntity)
-			.addFunction("GetHitbox", &LUAtrace_t::GetHitbox)
-			.addFunction("IsVisible", &LUAtrace_t::IsVisible)
-			.addFunction("GetEndPos", &LUAtrace_t::GetEndPos)
-			.addFunction("GetEntity", &LUAtrace_t::GetEntity)
-		.endClass()
-		.beginClass<LUAUtils>("__Utils")
-			.addFunction("WorldToScreen", &LUAUtils::WorldToScreen)
-			.addFunction("IsPlayer", &LUAUtils::IsPlayer)
-			.addFunction("GetHitboxPos", &LUAUtils::GetHitboxPosition)
-		.endClass()
-		.beginClass<KeyData>("KeyData")
-			.addData("key", &KeyData::key, false)
-			.addProperty("down", &KeyData::IsDown)
-			.addProperty("held", &KeyData::IsHeld)
-			.addData("processed", &KeyData::processed, false)
-		.endClass()
+			.beginClass<LUAEntity>("Entity")
+				.addFunction("IsValid", &LUAEntity::IsValid)
+				.addFunction("GetPos", &LUAEntity::GetPos)
+				.addFunction("GetHealth", &LUAEntity::GetHealth)
+				.addFunction("GetFlags", &LUAEntity::GetFlags)
+				.addFunction("GetShootPos", &LUAEntity::GetShootPos)
+				.addFunction("IsDormant", &LUAEntity::IsDormant)
+				.addFunction("IsAlive", &LUAEntity::IsAlive)
+				.addFunction("GetTeam", &LUAEntity::GetTeam)
+				.addFunction("GetPunch", &LUAEntity::GetPunch)
+				.addFunction("IsReal", &LUAEntity::IsReal)
+			.endClass()
+			.beginClass<LUAEntityList>("EntityList")
+				.addFunction("GetEntity", &LUAEntityList::GetEntity)
+				.addFunction("GetHighestEntityIndex", &LUAEntityList::GetHighestEntityIndex)
+			.endClass()
+			.beginClass<LUATrace>("EngineTrace")
+				.addFunction("Trace", &LUATrace::TraceRay)
+			.endClass()
+			.beginClass<LUAtrace_t>("trace_t")
+				.addFunction("DidHit", &LUAtrace_t::DidHit)
+				.addFunction("DidHitEntity", &LUAtrace_t::DidHitEntity)
+				.addFunction("GetHitbox", &LUAtrace_t::GetHitbox)
+				.addFunction("IsVisible", &LUAtrace_t::IsVisible)
+				.addFunction("GetEndPos", &LUAtrace_t::GetEndPos)
+				.addFunction("GetEntity", &LUAtrace_t::GetEntity)
+			.endClass()
+			.beginClass<LUAUtils>("__Utils")
+				.addFunction("WorldToScreen", &LUAUtils::WorldToScreen)
+				.addFunction("IsPlayer", &LUAUtils::IsPlayer)
+				.addFunction("GetHitboxPos", &LUAUtils::GetHitboxPosition)
+			.endClass()
+			.beginClass<KeyData>("KeyData")
+				.addData("key", &KeyData::key, false)
+				.addProperty("down", &KeyData::IsDown)
+				.addProperty("held", &KeyData::IsHeld)
+				.addData("processed", &KeyData::processed, false)
+			.endClass()
+			.beginClass<CDrawing>("__Drawing")
+				.addFunction("DrawString", &CDrawing::DrawString)
+				.addFunction("CreateFont", &CDrawing::CreateFont)
+				.addFunction("DrawLine", &CDrawing::DrawLine)
+				.addFunction("DrawFilledRect", &CDrawing::DrawFilledRect)
+				.addFunction("DrawOutlinedRect", &CDrawing::DrawOutlinedRect)
+				.addFunction("SetDrawColor", &CDrawing::SetDrawColor)
+			.endClass()
 		.endNamespace();
 
 	g_pLuaEngine->ExecuteString("bit = bit32");
@@ -139,11 +151,46 @@ bool Keyboard(const KeyData &data)
 	return false;
 }
 
+typedef void(__thiscall* PaintTraverseFn)(void*,unsigned int, bool, bool);
+PaintTraverseFn oPaintTraverse;
+void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bool c)
+{
+	oPaintTraverse(thisptr, a, b, c);
+	static unsigned int mstp = 0;
+	if (!mstp)
+	{
+		const char *pName = g_pPanel->GetName(a);
+		if (strstr("FocusOverlayPanel", pName))
+			mstp = a;
+	}
+	if (a == mstp)
+	{
+		using namespace luabridge;
+		LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
+		if (hook["Call"].isFunction())
+		{
+			try {
+				hook["Call"]("Paint");
+			}
+			catch (LuaException const& e)
+			{
+				//If this is called then there was no hook for "Key" registered. This isn't an issue.
+			}
+		}
+		else
+		{
+			printf("ERR: hook.Call not found!\n");
+		}
+	}
+
+}
+
 void StartThread()
 {
 	inputmanager::Init();
 
 	InterfaceManager::GetInterfaces();
+
 	g_pEngine->ClientCmd("clear");
 
 	VMT* client = new VMT(g_pClientMode);
@@ -151,6 +198,10 @@ void StartThread()
 	client->setTableHook();
 	client->hookFunction(24, hkCreateMove);
 
+	VMT* panel = new VMT(g_pPanel);
+	panel->init();
+	panel->setTableHook();
+	oPaintTraverse = (PaintTraverseFn)panel->hookFunction(41, hkPaintTraverse);
 
 	RegEverything(g_pLuaEngine->L());
 	Msg("\n\n\n    _____  _____  _                        ___  \n \

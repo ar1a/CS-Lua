@@ -161,7 +161,9 @@
     <ClCompile Include="sdk\interface\EntityList.cpp" />
     <ClCompile Include="sdk\interface\Globals.cpp" />
     <ClCompile Include="sdk\interface\ModelInfo.cpp" />
+    <ClCompile Include="sdk\interface\Panel.cpp" />
     <ClCompile Include="sdk\interface\Predictionandmovement.cpp" />
+    <ClCompile Include="sdk\interface\surface.cpp" />
     <ClCompile Include="sdk\SigScan.cpp" />
     <ClCompile Include="sdk\Vector.cpp" />
     <ClCompile Include="sdk\VMT.cpp" />
@@ -200,24 +202,34 @@
     <ClInclude Include="lua\include\lua.hpp" />
     <ClInclude Include="lua\include\luaconf.h" />
     <ClInclude Include="lua\include\lualib.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="sdk\Address.h" />
     <ClInclude Include="sdk\CBaseEntity.h" />
     <ClInclude Include="sdk\cmove.h" />
     <ClInclude Include="sdk\HookBase.h" />
     <ClInclude Include="sdk\InputManager.h" />
     <ClInclude Include="sdk\InterfaceManager.hpp" />
+    <ClInclude Include="Drawing.h" />
     <ClInclude Include="sdk\interface\Engine.h" />
     <ClInclude Include="sdk\interface\EngineTrace.h" />
     <ClInclude Include="sdk\interface\EntityList.h" />
     <ClInclude Include="sdk\interface\Globals.h" />
     <ClInclude Include="sdk\interface\InterfaceBase.h" />
     <ClInclude Include="sdk\interface\ModelInfo.h" />
+    <ClInclude Include="sdk\interface\Panel.h" />
     <ClInclude Include="sdk\interface\Predictionandmovement.h" />
+    <ClInclude Include="sdk\interface\Surface.h" />
     <ClInclude Include="sdk\math.h" />
     <ClInclude Include="sdk\sigscan.h" />
     <ClInclude Include="sdk\usercmd.h" />
     <ClInclude Include="sdk\Vector.h" />
     <ClInclude Include="sdk\VMT.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="cstory.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\..\Desktop\cstory.raw" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
