@@ -7,6 +7,7 @@
 #include "exports\Exports.h"
 #include "sdk\cmove.h"
 #include "sdk\InputManager.h"
+#include "exports\LuaFiles.h"
 
 LUAInterfaces g_Interfaces;
 LUAUtils g_Utils;
@@ -108,6 +109,8 @@ void RegEverything(lua_State* L)
 		.beginClass<KeyData>("KeyData")
 			.addData("key", &KeyData::key, false)
 			.addProperty("down", &KeyData::IsDown)
+			.addProperty("held", &KeyData::IsHeld)
+			.addData("processed", &KeyData::processed, false)
 		.endClass()
 		.endNamespace();
 
@@ -157,7 +160,8 @@ void StartThread()
  | |____ ____) || |___| |_| | (_| |  \\ V // /_ \n \
   \\_____|_____(_)______\\__,_|\\__,_|   \\_/|____|\n\n\n");
 	Msg("CS:Lua v2 loaded! Enjoy!\n");
-	g_pLuaEngine->ExecuteFile("hook.lua");
+	//g_pLuaEngine->ExecuteFile("hook.lua");
+	g_pLuaEngine->ExecuteString(HOOK_CODE.c_str());
 	Msg("---------------------\nhook.lua loaded\n---------------------\n");
 	g_pLuaEngine->ExecuteFile("init.lua");
 	Msg("---------------------\ninit.lua loaded\n---------------------\n");

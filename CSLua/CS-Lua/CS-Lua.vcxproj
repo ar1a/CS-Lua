@@ -172,6 +172,7 @@
     <ClInclude Include="exports\LUAEngine.h" />
     <ClInclude Include="exports\LUAEntity.h" />
     <ClInclude Include="exports\LUAEntityList.h" />
+    <ClInclude Include="exports\LuaFiles.h" />
     <ClInclude Include="exports\LUAInterfaces.h" />
     <ClInclude Include="exports\LUATrace.h" />
     <ClInclude Include="exports\LUAUserCmd.h" />

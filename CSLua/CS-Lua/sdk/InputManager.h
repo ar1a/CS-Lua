@@ -107,6 +107,11 @@ struct KeyData {
 	{
 		return (state == KeyEvent::Down && prevstate == KeyEvent::Up);
 	}
+
+	bool IsHeld() const
+	{
+		return state == KeyEvent::Down;
+	}
 };
 
 typedef bool(*mouse_callback)(const MouseData &);

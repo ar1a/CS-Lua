@@ -206,5 +206,8 @@
     <ClInclude Include="sdk\InputManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="exports\LuaFiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
