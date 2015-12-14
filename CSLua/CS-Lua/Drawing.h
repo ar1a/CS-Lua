@@ -49,6 +49,11 @@ public:
 		g_pSurface->DrawSetcolor(m_r, m_g, m_b, m_a);
 	}
 
+	void DrawRect(int x, int y, int w, int h)
+	{
+		g_pSurface->DrawOutlinedRect(x, y, x + w, y + h);
+	}
+
 	void SetDrawColor(int r, int g, int b, int a)
 	{
 		m_r = r; m_g = g; m_b = b; m_a = a;

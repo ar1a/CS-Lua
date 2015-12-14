@@ -27,6 +27,8 @@ inline void ClampAngle(Vector& qaAng)
 
 bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 {
+	if (!g_pLuaEngine->L())
+		return false;
 
 	using namespace luabridge;
 

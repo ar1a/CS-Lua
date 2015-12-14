@@ -1,3 +1,4 @@
+#define NDEBUG
 #include <iostream>
 #include <Windows.h>
 #include <lua.hpp>
@@ -122,6 +123,7 @@ void RegEverything(lua_State* L)
 				.addFunction("DrawLine", &CDrawing::DrawLine)
 				.addFunction("DrawFilledRect", &CDrawing::DrawFilledRect)
 				.addFunction("DrawOutlinedRect", &CDrawing::DrawOutlinedRect)
+				.addFunction("DrawRect", &CDrawing::DrawRect)
 				.addFunction("SetDrawColor", &CDrawing::SetDrawColor)
 			.endClass()
 		.endNamespace();
@@ -131,6 +133,8 @@ void RegEverything(lua_State* L)
 
 bool Keyboard(const KeyData &data)
 {
+	if (!g_pLuaEngine->L())
+		return false;
 	using namespace luabridge;
 	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 	if (hook["Call"].isFunction())
@@ -145,7 +149,7 @@ bool Keyboard(const KeyData &data)
 	}
 	else
 	{
-		printf("ERR: hook.Call not found!\n");
+		printf("ERR: KB -  hook.Call not found!\n");
 	}
 
 	return false;
@@ -165,6 +169,8 @@ void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bo
 	}
 	if (a == mstp)
 	{
+		if (!g_pLuaEngine->L())
+			return;
 		using namespace luabridge;
 		LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 		if (hook["Call"].isFunction())
@@ -179,12 +185,21 @@ void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bo
 		}
 		else
 		{
-			printf("ERR: hook.Call not found!\n");
+			printf("ERR: PT - hook.Call not found!\n");
 		}
 	}
 
 }
 
+void ResetEnvironment()
+{
+	g_pLuaEngine->Reset();
+	g_pLuaEngine->ExecuteString(HOOK_CODE.c_str());
+	Msg("---------------------\nhook.lua loaded\n---------------------\n");
+	g_pLuaEngine->ExecuteFile("init.lua");
+	Msg("---------------------\ninit.lua loaded\n---------------------\n");
+	RegEverything(g_pLuaEngine->L());
+}
 void StartThread()
 {
 	inputmanager::Init();

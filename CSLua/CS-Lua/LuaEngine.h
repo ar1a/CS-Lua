@@ -17,6 +17,14 @@ public:
 
 	void ExecuteString(const char* expression);
 
+	void Reset()
+	{
+		//if(m_L)
+		//	lua_close(m_L);
+		m_L = luaL_newstate();
+		luaL_openlibs(m_L);
+	}
+
 
 private:
 	lua_State* m_L;
