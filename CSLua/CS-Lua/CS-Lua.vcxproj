@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClCompile Include="LuaEngine.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="sdk\InputManager.cpp" />
     <ClCompile Include="sdk\InterfaceManager.cpp" />
     <ClCompile Include="sdk\interface\Engine.cpp" />
     <ClCompile Include="sdk\interface\EngineTrace.cpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="sdk\CBaseEntity.h" />
     <ClInclude Include="sdk\cmove.h" />
     <ClInclude Include="sdk\HookBase.h" />
+    <ClInclude Include="sdk\InputManager.h" />
     <ClInclude Include="sdk\InterfaceManager.hpp" />
     <ClInclude Include="sdk\interface\Engine.h" />
     <ClInclude Include="sdk\interface\EngineTrace.h" />

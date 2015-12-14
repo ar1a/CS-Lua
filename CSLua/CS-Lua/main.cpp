@@ -119,9 +119,21 @@ bool Keyboard(const KeyData &data)
 	using namespace luabridge;
 	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 	if (hook["Call"].isFunction())
-		hook["Call"]("Key", data);
+	{
+		try {
+			hook["Call"]("Key", data);
+		}
+		catch (LuaException const& e)
+		{
+			//If this is called then there was no hook for "Key" registered. This isn't an issue.
+		}
+	}
 	else
+	{
 		printf("ERR: hook.Call not found!\n");
+	}
+
+	return false;
 }
 
 void StartThread()
@@ -145,12 +157,15 @@ void StartThread()
  | |____ ____) || |___| |_| | (_| |  \\ V // /_ \n \
   \\_____|_____(_)______\\__,_|\\__,_|   \\_/|____|\n\n\n");
 	Msg("CS:Lua v2 loaded! Enjoy!\n");
+	g_pLuaEngine->ExecuteFile("hook.lua");
+	Msg("---------------------\nhook.lua loaded\n---------------------\n");
+	g_pLuaEngine->ExecuteFile("init.lua");
+	Msg("---------------------\ninit.lua loaded\n---------------------\n");
+	inputmanager::AddKeyboardCallback(Keyboard);
 	while (1)
 	{
 		if (GetAsyncKeyState(VK_HOME) & 0x8000)
 		{
-			g_pLuaEngine->ExecuteFile("hook.lua");
-			Msg("---------------------\nhook.lua loaded\n---------------------\n");
 			g_pLuaEngine->ExecuteFile("exec.lua");
 			Sleep(300);
 		}

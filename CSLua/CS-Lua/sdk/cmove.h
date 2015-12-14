@@ -32,9 +32,19 @@ bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 
 	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 	if (hook["Call"].isFunction())
-		hook["Call"]("CreateMove", LuaUserCmd(cmd));
+	{
+		try {
+			hook["Call"]("CreateMove", LuaUserCmd(cmd));
+		}
+		catch (LuaException const& e)
+		{
+			//If this is called then there was no hook for "CreateMove" registered. This isn't an issue.
+		}
+	}
 	else
+	{
 		printf("ERR: hook.Call not found!\n");
+	}
 
 	ClampAngle(cmd->viewangles);
 

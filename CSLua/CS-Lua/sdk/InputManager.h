@@ -105,7 +105,7 @@ struct KeyData {
 
 	bool IsDown() const
 	{
-		return state == KeyEvent::Down;
+		return (state == KeyEvent::Down && prevstate == KeyEvent::Up);
 	}
 };
 
