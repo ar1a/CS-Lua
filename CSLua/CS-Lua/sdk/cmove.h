@@ -30,6 +30,8 @@ bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 	if (!g_pLuaEngine->L())
 		return false;
 
+	g_pLuaEngine->m.lock();
+
 	using namespace luabridge;
 
 	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
@@ -49,6 +51,9 @@ bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 	}
 
 	ClampAngle(cmd->viewangles);
+
+
+	g_pLuaEngine->m.unlock();
 
 	return false;
 }

@@ -135,6 +135,7 @@ bool Keyboard(const KeyData &data)
 {
 	if (!g_pLuaEngine->L())
 		return false;
+	g_pLuaEngine->m.lock();
 	using namespace luabridge;
 	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 	if (hook["Call"].isFunction())
@@ -151,6 +152,7 @@ bool Keyboard(const KeyData &data)
 	{
 		printf("ERR: KB -  hook.Call not found!\n");
 	}
+	g_pLuaEngine->m.unlock();
 
 	return false;
 }
@@ -169,6 +171,8 @@ void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bo
 	}
 	if (a == mstp)
 	{
+
+		g_pLuaEngine->m.lock();
 		if (!g_pLuaEngine->L())
 			return;
 		using namespace luabridge;
@@ -187,6 +191,8 @@ void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bo
 		{
 			printf("ERR: PT - hook.Call not found!\n");
 		}
+
+		g_pLuaEngine->m.unlock();
 	}
 
 }
@@ -236,7 +242,9 @@ void StartThread()
 	{
 		if (GetAsyncKeyState(VK_HOME) & 0x8000)
 		{
+			g_pLuaEngine->m.lock();
 			g_pLuaEngine->ExecuteFile("exec.lua");
+			g_pLuaEngine->m.unlock();
 			Sleep(300);
 		}
 		Sleep(1);

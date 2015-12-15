@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <lua.hpp>
-
+#include <mutex>
 
 class LuaEngine
 {
@@ -25,7 +25,7 @@ public:
 		luaL_openlibs(m_L);
 	}
 
-
+	std::mutex m;
 private:
 	lua_State* m_L;
 	void report_errors(int state);
