@@ -27,10 +27,10 @@ inline void ClampAngle(Vector& qaAng)
 
 bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 {
+	LOCKLUA();
 	if (!g_pLuaEngine->L())
 		return false;
 
-	g_pLuaEngine->m.lock();
 
 	using namespace luabridge;
 
@@ -53,7 +53,6 @@ bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 	ClampAngle(cmd->viewangles);
 
 
-	g_pLuaEngine->m.unlock();
 
 	return false;
 }

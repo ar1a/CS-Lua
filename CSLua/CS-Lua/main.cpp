@@ -133,9 +133,7 @@ void RegEverything(lua_State* L)
 
 bool Keyboard(const KeyData &data)
 {
-	if (!g_pLuaEngine->L())
-		return false;
-	g_pLuaEngine->m.lock();
+	LOCKLUA();
 	using namespace luabridge;
 	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 	if (hook["Call"].isFunction())
@@ -152,7 +150,6 @@ bool Keyboard(const KeyData &data)
 	{
 		printf("ERR: KB -  hook.Call not found!\n");
 	}
-	g_pLuaEngine->m.unlock();
 
 	return false;
 }
@@ -171,10 +168,11 @@ void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bo
 	}
 	if (a == mstp)
 	{
-
-		g_pLuaEngine->m.lock();
+		LOCKLUA();
 		if (!g_pLuaEngine->L())
+		{
 			return;
+		}
 		using namespace luabridge;
 		LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 		if (hook["Call"].isFunction())
@@ -192,7 +190,6 @@ void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bo
 			printf("ERR: PT - hook.Call not found!\n");
 		}
 
-		g_pLuaEngine->m.unlock();
 	}
 
 }
@@ -213,6 +210,9 @@ void StartThread()
 	InterfaceManager::GetInterfaces();
 
 	g_pEngine->ClientCmd("clear");
+
+	std::unique_lock<std::mutex> lock(g_pLuaEngine->m);
+	lock.lock();
 
 	VMT* client = new VMT(g_pClientMode);
 	client->init();
@@ -238,13 +238,14 @@ void StartThread()
 	g_pLuaEngine->ExecuteFile("init.lua");
 	Msg("---------------------\ninit.lua loaded\n---------------------\n");
 	inputmanager::AddKeyboardCallback(Keyboard);
+	lock.unlock();
 	while (1)
 	{
 		if (GetAsyncKeyState(VK_HOME) & 0x8000)
 		{
-			g_pLuaEngine->m.lock();
+			lock.lock();
 			g_pLuaEngine->ExecuteFile("exec.lua");
-			g_pLuaEngine->m.unlock();
+			lock.unlock();
 			Sleep(300);
 		}
 		Sleep(1);

@@ -3,6 +3,8 @@
 #include <lua.hpp>
 #include <mutex>
 
+#define LOCKLUA() std::lock_guard<std::mutex> lock(g_pLuaEngine->m)
+
 class LuaEngine
 {
 public:
