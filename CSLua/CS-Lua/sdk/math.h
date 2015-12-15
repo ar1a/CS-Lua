@@ -154,6 +154,7 @@ public:
 		return ret;
 	}
 
+
 public:
 	float m[3][4];
 };

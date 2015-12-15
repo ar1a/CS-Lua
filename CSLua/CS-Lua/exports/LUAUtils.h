@@ -11,10 +11,14 @@ class LUAUtils : public BaseLuaExport
 
 public:
 
-	Vector WorldToScreen(const Vector &origin) {
-		Vector screen;
-		if (!ScreenTransform(origin, screen)) {
-			int iScreenWidth, iScreenHeight;
+	Vector WorldToScreen(lua_State* L) {
+		Vector screen(0,0,0);
+		Vector origin = luabridge::LuaRef::fromStack(L, 2).cast<Vector>();  //Vector is correct
+
+		matrix3x4_t w2sMatrix = g_pEngine->WorldToScreenMatrix();
+		/*SOMETHING IN HERE CRASHES*/
+		//if (!ScreenTransform(origin, screen)) {
+			/*int iScreenWidth, iScreenHeight;
 			g_pEngine->GetScreenSize(iScreenWidth, iScreenHeight);
 
 			float fScreenX = iScreenWidth / 2.0f;
@@ -24,20 +28,21 @@ public:
 			fScreenY -= 0.5f * screen.y * iScreenHeight + 0.5f;
 
 			screen.x = fScreenX;
-			screen.y = fScreenY;
-		}
+			screen.y = fScreenY;*/
+		//}
+		/*END*/
 		return screen;
 	}
-	bool ScreenTransform(const Vector& point, Vector& screen) {
-		const matrix3x4_t& w2sMatrix = g_pEngine->WorldToScreenMatrix();
-		screen.x = w2sMatrix.m[0][0] * point.x + w2sMatrix.m[0][1] * point.y + w2sMatrix.m[0][2] * point.z + w2sMatrix.m[0][3];
+	bool ScreenTransform(Vector& point, Vector& screen) {
+		 matrix3x4_t w2sMatrix = g_pEngine->WorldToScreenMatrix();
+		/*screen.x = w2sMatrix.m[0][0] * point.x + w2sMatrix.m[0][1] * point.y + w2sMatrix.m[0][2] * point.z + w2sMatrix.m[0][3];
 		screen.y = w2sMatrix.m[1][0] * point.x + w2sMatrix.m[1][1] * point.y + w2sMatrix.m[1][2] * point.z + w2sMatrix.m[1][3];
 
 		float w = w2sMatrix.m[3][0] * point.x + w2sMatrix.m[3][1] * point.y + w2sMatrix.m[3][2] * point.z + w2sMatrix.m[3][3];
 		screen.z = 0.0f;
 
 		bool bIsBehind = false;
-		if (w < 0.001f) {
+		/*if (w < 0.001f) {
 			bIsBehind = true;
 			screen.Init(0, 0, 0);
 		}
@@ -46,8 +51,8 @@ public:
 			screen.x *= invw;
 			screen.y *= invw;
 		}
-
-		return bIsBehind;
+		*/
+		return true;
 	}
 
 	bool IsPlayer(LUAEntity ent)
