@@ -212,7 +212,6 @@ void StartThread()
 	g_pEngine->ClientCmd("clear");
 
 	std::unique_lock<std::mutex> lock(g_pLuaEngine->m);
-	lock.lock();
 
 	VMT* client = new VMT(g_pClientMode);
 	client->init();
@@ -223,6 +222,9 @@ void StartThread()
 	panel->init();
 	panel->setTableHook();
 	oPaintTraverse = (PaintTraverseFn)panel->hookFunction(41, hkPaintTraverse);
+
+
+	//lock.lock();
 
 	RegEverything(g_pLuaEngine->L());
 	Msg("\n\n\n    _____  _____  _                        ___  \n \
