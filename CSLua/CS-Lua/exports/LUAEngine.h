@@ -37,11 +37,6 @@ public:
 	}
 
 
-	VMatrix GetMatrix()
-	{
-		return m_pEngine->WorldToScreenMatrix();
-	}
-
 private:
 	CEngine* m_pEngine;
 
