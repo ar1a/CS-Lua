@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+class matrix3x4_t;
 struct Vec2
 {
 	Vec2() : x(0), y(0) {}
@@ -254,6 +255,9 @@ public:
 	{
 		return (*this / v);
 	}
+
+	Vector ToScreen(const matrix3x4_t& w2sMatrix);
+	bool ScreenTransform(Vector& point, Vector& screen, matrix3x4_t& w2sMatrix);
 };
 
 void VectorCopy(const Vector& src, Vector& dst);

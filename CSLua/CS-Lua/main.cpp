@@ -16,6 +16,28 @@ LUAInterfaces g_Interfaces;
 LUAUtils g_Utils;
 CDrawing g_Drawing;
 
+Vector Vector::ToScreen(const matrix3x4_t& w2sMatrix) {
+	Vector screen(0, 0, 0);
+	//Vector origin = luabridge::LuaRef::fromStack(L, 2).cast<Vector>();  //Vector is correct
+	Vector origin = *this;
+	/*SOMETHING IN HERE CRASHES*/
+	//if (!ScreenTransform(origin, screen)) {
+	/*int iScreenWidth, iScreenHeight;
+	g_pEngine->GetScreenSize(iScreenWidth, iScreenHeight);
+
+	float fScreenX = iScreenWidth / 2.0f;
+	float fScreenY = iScreenHeight / 2.0f;
+
+	fScreenX += 0.5f * screen.x * iScreenWidth + 0.5f;
+	fScreenY -= 0.5f * screen.y * iScreenHeight + 0.5f;
+
+	screen.x = fScreenX;
+	screen.y = fScreenY;*/
+	//}
+	/*END*/
+	return screen;
+}
+
 typedef void(__cdecl *MsgFn)(char const* pMsg, va_list);
 void Msg(char const* msg)
 {
@@ -50,6 +72,7 @@ void RegEverything(lua_State* L)
 				.addFunction("GetLocalPlayer", &LUAEngine::GetLocalPlayer)
 				.addProperty("viewangles", &LUAEngine::GetViewAngles, &LUAEngine::SetViewAngles)
 				.addFunction("Cmd", &LUAEngine::Cmd)
+				.addFunction("GetMatrix", &LUAEngine::GetMatrix)
 			.endClass()
 			.beginClass<Vector>("Vector")
 				.addConstructor<void(*)()>()
@@ -65,6 +88,7 @@ void RegEverything(lua_State* L)
 				.addFunction("Length", &Vector::Length)
 				.addFunction("Angle", &Vector::Angle)
 				.addFunction("Distance", &Vector::DistTo)
+				.addFunction("ToScreen", &Vector::ToScreen)
 			.endClass()
 			.beginClass<Vec2>("Vec2")
 				.addConstructor<void(*)()>()
@@ -126,6 +150,9 @@ void RegEverything(lua_State* L)
 				.addFunction("DrawRect", &CDrawing::DrawRect)
 				.addFunction("SetDrawColor", &CDrawing::SetDrawColor)
 			.endClass()
+		.beginClass<matrix3x4_t>("matrix3x4_t")
+
+		.endClass()
 		.endNamespace();
 
 	g_pLuaEngine->ExecuteString("bit = bit32");

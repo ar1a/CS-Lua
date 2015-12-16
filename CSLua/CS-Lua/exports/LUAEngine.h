@@ -37,6 +37,11 @@ public:
 	}
 
 
+	matrix3x4_t GetMatrix()
+	{
+		return m_pEngine->WorldToScreenMatrix();
+	}
+
 private:
 	CEngine* m_pEngine;
 

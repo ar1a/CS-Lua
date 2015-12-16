@@ -11,9 +11,9 @@ class LUAUtils : public BaseLuaExport
 
 public:
 
-	Vector WorldToScreen(lua_State* L) {
+	Vector WorldToScreen(const Vector& origin) {
 		Vector screen(0,0,0);
-		Vector origin = luabridge::LuaRef::fromStack(L, 2).cast<Vector>();  //Vector is correct
+		//Vector origin = luabridge::LuaRef::fromStack(L, 2).cast<Vector>();  //Vector is correct
 
 		matrix3x4_t w2sMatrix = g_pEngine->WorldToScreenMatrix();
 		/*SOMETHING IN HERE CRASHES*/
@@ -105,3 +105,4 @@ private:
 	}
 
 };
+extern LUAUtils g_Utils;
