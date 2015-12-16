@@ -159,7 +159,6 @@ public:
 	float m[3][4];
 };
 
-typedef float VMatrix[3][4];
 
 
 

@@ -50,6 +50,8 @@ bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 		printf("ERR: hook.Call not found!\n");
 	}
 
+
+
 	ClampAngle(cmd->viewangles);
 
 

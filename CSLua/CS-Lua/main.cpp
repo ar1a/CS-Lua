@@ -1,4 +1,8 @@
-#define NDEBUG
+#pragma warning(disable: 4099)
+#pragma warning(disable: 4227)
+#pragma warning(disable: 4244)
+#pragma warning(disable: 4800)
+#pragma warning(disable: 4101)
 #include <iostream>
 #include <Windows.h>
 #include <lua.hpp>
@@ -16,28 +20,38 @@ LUAInterfaces g_Interfaces;
 LUAUtils g_Utils;
 CDrawing g_Drawing;
 
-Vector Vector::ToScreen(const matrix3x4_t& w2sMatrix) {
+Vector Vector::ToScreen() {
 	Vector screen(0, 0, 0);
-	//Vector origin = luabridge::LuaRef::fromStack(L, 2).cast<Vector>();  //Vector is correct
-	Vector origin = *this;
-	/*SOMETHING IN HERE CRASHES*/
-	//if (!ScreenTransform(origin, screen)) {
-	/*int iScreenWidth, iScreenHeight;
-	g_pEngine->GetScreenSize(iScreenWidth, iScreenHeight);
+	Vector point = *this;
+	const VMatrix &worldToScreen = g_pEngine->WorldToScreenMatrix();
+	screen.x = worldToScreen[0][0] * point[0] + worldToScreen[0][1] * point[1] + worldToScreen[0][2] * point[2] + worldToScreen[0][3];
+	screen.y = worldToScreen[1][0] * point[0] + worldToScreen[1][1] * point[1] + worldToScreen[1][2] * point[2] + worldToScreen[1][3];
+	float w = worldToScreen[3][0] * point[0] + worldToScreen[3][1] * point[1] + worldToScreen[3][2] * point[2] + worldToScreen[3][3];
+	screen.z = 0.0f;
 
-	float fScreenX = iScreenWidth / 2.0f;
-	float fScreenY = iScreenHeight / 2.0f;
+	if (w >= 0.001f)
+	{
+		int iWidth, iHeight;
+		g_pEngine->GetScreenSize(iWidth, iHeight);
 
-	fScreenX += 0.5f * screen.x * iScreenWidth + 0.5f;
-	fScreenY -= 0.5f * screen.y * iScreenHeight + 0.5f;
+		screen.x *= 1.0f / w;
+		screen.y *= 1.0f / w;
 
-	screen.x = fScreenX;
-	screen.y = fScreenY;*/
-	//}
-	/*END*/
-	return screen;
+		float x = iWidth / 2;
+		float y = iHeight / 2;
+		x += 0.5 * screen.x * iWidth + 0.5;
+		y -= 0.5 * screen.y * iHeight + 0.5;
+		screen.x = x;
+		screen.y = y;
+
+		return screen;
+	}
+	screen.x *= 100000;
+	screen.y *= 100000;
+
+		return screen;
+	
 }
-
 typedef void(__cdecl *MsgFn)(char const* pMsg, va_list);
 void Msg(char const* msg)
 {
@@ -131,7 +145,6 @@ void RegEverything(lua_State* L)
 				.addFunction("GetEntity", &LUAtrace_t::GetEntity)
 			.endClass()
 			.beginClass<LUAUtils>("__Utils")
-				.addFunction("WorldToScreen", &LUAUtils::WorldToScreen)
 				.addFunction("IsPlayer", &LUAUtils::IsPlayer)
 				.addFunction("GetHitboxPos", &LUAUtils::GetHitboxPosition)
 			.endClass()
@@ -160,7 +173,7 @@ void RegEverything(lua_State* L)
 
 bool Keyboard(const KeyData &data)
 {
-	LOCKLUA();
+	std::unique_lock<std::mutex> lock(g_pLuaEngine->m);
 	using namespace luabridge;
 	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 	if (hook["Call"].isFunction())
@@ -176,6 +189,13 @@ bool Keyboard(const KeyData &data)
 	else
 	{
 		printf("ERR: KB -  hook.Call not found!\n");
+	}
+
+	lock.unlock();
+	if (data.IsDown() && data.key == VK_DELETE) {
+		lock.lock();
+		g_pLuaEngine->ExecuteFile("exec.lua");
+		lock.unlock();
 	}
 
 	return false;
@@ -238,7 +258,7 @@ void StartThread()
 
 	g_pEngine->ClientCmd("clear");
 
-	std::unique_lock<std::mutex> lock(g_pLuaEngine->m);
+	LOCKLUA();
 
 	VMT* client = new VMT(g_pClientMode);
 	client->init();
@@ -250,8 +270,6 @@ void StartThread()
 	panel->setTableHook();
 	oPaintTraverse = (PaintTraverseFn)panel->hookFunction(41, hkPaintTraverse);
 
-
-	//lock.lock();
 
 	RegEverything(g_pLuaEngine->L());
 	Msg("\n\n\n    _____  _____  _                        ___  \n \
@@ -267,18 +285,6 @@ void StartThread()
 	g_pLuaEngine->ExecuteFile("init.lua");
 	Msg("---------------------\ninit.lua loaded\n---------------------\n");
 	inputmanager::AddKeyboardCallback(Keyboard);
-	lock.unlock();
-	while (1)
-	{
-		if (GetAsyncKeyState(VK_HOME) & 0x8000)
-		{
-			lock.lock();
-			g_pLuaEngine->ExecuteFile("exec.lua");
-			lock.unlock();
-			Sleep(300);
-		}
-		Sleep(1);
-	}
 }
 
 void InitConsole(char* name)

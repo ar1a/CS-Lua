@@ -37,7 +37,7 @@ public:
 	}
 
 
-	matrix3x4_t GetMatrix()
+	VMatrix GetMatrix()
 	{
 		return m_pEngine->WorldToScreenMatrix();
 	}
