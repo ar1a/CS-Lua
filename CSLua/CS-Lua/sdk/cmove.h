@@ -27,6 +27,10 @@ inline void ClampAngle(Vector& qaAng)
 
 bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 {
+	LOCKLUA();
+	if (!g_pLuaEngine->L())
+		return false;
+
 
 	using namespace luabridge;
 
@@ -46,7 +50,11 @@ bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 		printf("ERR: hook.Call not found!\n");
 	}
 
+
+
 	ClampAngle(cmd->viewangles);
+
+
 
 	return false;
 }

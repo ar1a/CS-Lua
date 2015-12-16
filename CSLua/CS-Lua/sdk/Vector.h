@@ -1,8 +1,10 @@
 #pragma once
 #include <math.h>
+struct matrix3x4_t;
+class lua_State;
 struct Vec2
 {
-	Vec2() {}
+	Vec2() : x(0), y(0) {}
 	Vec2(float _x, float _y) { x = _x; y = _y; }
 	float x;
 	float y;
@@ -254,6 +256,8 @@ public:
 	{
 		return (*this / v);
 	}
+
+	Vector ToScreen();
 };
 
 void VectorCopy(const Vector& src, Vector& dst);

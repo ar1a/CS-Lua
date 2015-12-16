@@ -18,7 +18,7 @@ void LuaEngine::report_errors(int state)
 
 void LuaEngine::ExecuteFile(const char* file)
 {
-	if (!file)
+	if (!file || !m_L)
 		return;
 
 	int state = luaL_dofile(m_L, file);
@@ -28,7 +28,7 @@ void LuaEngine::ExecuteFile(const char* file)
 
 void LuaEngine::ExecuteString(const char* expression)
 {
-	if (!expression)
+	if (!expression || !m_L)
 	{
 		std::cerr << "ERR: null expression passed to script engine!" << std::endl;
 		return;

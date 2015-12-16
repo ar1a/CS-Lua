@@ -8,6 +8,8 @@
 #include "interface\Predictionandmovement.h"
 #include "interface\ModelInfo.h"
 #include "interface\EngineTrace.h"
+#include "interface\Panel.h"
+#include "interface\Surface.h"
 
 void* g_pClient;
 void* g_pClientMode;
@@ -20,6 +22,8 @@ void InterfaceManager::GetInterfaces()
 	g_pMovement = (CMovement*)GetInterface("client.dll", "GameMovement");
 	g_pModelInfo = (SDKModelInfo*)GetInterface("engine.dll", "VModelInfoClient");
 	g_pEngineTrace = (SDKTrace*)GetInterface("engine.dll", "EngineTraceClient");
+	g_pPanel = (CPanel*)GetInterface("vgui2.dll", "VGUI_Panel");
+	g_pSurface = (CSurface*)GetInterface("vguimatsurface.dll", "VGUI_Surface");
 
 	Address CDLLTable = ((Address)g_pClient).To<DWORD*>();
 

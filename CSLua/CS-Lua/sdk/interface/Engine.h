@@ -11,6 +11,17 @@ public:
 	char guid[32 + 1];
 	char __pad3[0x500];
 };
+
+struct VMatrix
+{
+public:
+	float* operator[](int i) { return m[i]; }
+	const float* operator[](int i) const { return m[i]; }
+	float *Base() { return &m[0][0]; }
+	const float *Base() const { return &m[0][0]; }
+
+	float	m[4][4];
+};
 class CEngine : public InterfaceBase
 {
 public:
@@ -50,9 +61,9 @@ public:
 		VMT::getvfunc<fn>(this, 18)(this, angles);
 	}
 
-	matrix3x4_t WorldToScreenMatrix()
+	VMatrix WorldToScreenMatrix()
 	{
-		typedef matrix3x4_t(__thiscall* fn)(void*);
+		typedef VMatrix(__thiscall* fn)(void*);
 		return VMT::getvfunc<fn>(this, 37)(this);
 	}
 };

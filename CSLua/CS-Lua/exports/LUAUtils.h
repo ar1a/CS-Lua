@@ -10,46 +10,6 @@ class LUAUtils : public BaseLuaExport
 {
 
 public:
-
-	Vector WorldToScreen(const Vector &origin) {
-		Vector screen;
-		if (!ScreenTransform(origin, screen)) {
-			int iScreenWidth, iScreenHeight;
-			g_pEngine->GetScreenSize(iScreenWidth, iScreenHeight);
-
-			float fScreenX = iScreenWidth / 2.0f;
-			float fScreenY = iScreenHeight / 2.0f;
-
-			fScreenX += 0.5f * screen.x * iScreenWidth + 0.5f;
-			fScreenY -= 0.5f * screen.y * iScreenHeight + 0.5f;
-
-			screen.x = fScreenX;
-			screen.y = fScreenY;
-		}
-		return screen;
-	}
-	bool ScreenTransform(const Vector& point, Vector& screen) {
-		const matrix3x4_t& w2sMatrix = g_pEngine->WorldToScreenMatrix();
-		screen.x = w2sMatrix.m[0][0] * point.x + w2sMatrix.m[0][1] * point.y + w2sMatrix.m[0][2] * point.z + w2sMatrix.m[0][3];
-		screen.y = w2sMatrix.m[1][0] * point.x + w2sMatrix.m[1][1] * point.y + w2sMatrix.m[1][2] * point.z + w2sMatrix.m[1][3];
-
-		float w = w2sMatrix.m[3][0] * point.x + w2sMatrix.m[3][1] * point.y + w2sMatrix.m[3][2] * point.z + w2sMatrix.m[3][3];
-		screen.z = 0.0f;
-
-		bool bIsBehind = false;
-		if (w < 0.001f) {
-			bIsBehind = true;
-			screen.Init(0, 0, 0);
-		}
-		else {
-			float invw = 1.0f / w;
-			screen.x *= invw;
-			screen.y *= invw;
-		}
-
-		return bIsBehind;
-	}
-
 	bool IsPlayer(LUAEntity ent)
 	{
 		player_info_t info;
@@ -100,3 +60,4 @@ private:
 	}
 
 };
+extern LUAUtils g_Utils;
