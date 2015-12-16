@@ -86,7 +86,6 @@ void RegEverything(lua_State* L)
 				.addFunction("GetLocalPlayer", &LUAEngine::GetLocalPlayer)
 				.addProperty("viewangles", &LUAEngine::GetViewAngles, &LUAEngine::SetViewAngles)
 				.addFunction("Cmd", &LUAEngine::Cmd)
-				.addFunction("GetMatrix", &LUAEngine::GetMatrix)
 			.endClass()
 			.beginClass<Vector>("Vector")
 				.addConstructor<void(*)()>()
@@ -163,9 +162,6 @@ void RegEverything(lua_State* L)
 				.addFunction("DrawRect", &CDrawing::DrawRect)
 				.addFunction("SetDrawColor", &CDrawing::SetDrawColor)
 			.endClass()
-		.beginClass<matrix3x4_t>("matrix3x4_t")
-
-		.endClass()
 		.endNamespace();
 
 	g_pLuaEngine->ExecuteString("bit = bit32");
