@@ -258,6 +258,37 @@ public:
 	}
 
 	Vector ToScreen();
+	Vector lerp(Vector target, float t)
+	{
+		return *this * (1 - t) + target * t;
+	}
+
+	Vector ClampAngle()
+	{
+		Vector qaAng = *this;
+		Vector ret;
+		ret.x = qaAng.x;
+		ret.y = qaAng.y;
+
+		if (qaAng.x > 89.0f && qaAng.x <= 180.0f)
+			ret.x = 89.0f;
+
+		if (qaAng.x > 180.0f)
+			ret.x = qaAng.x - 360.0f;
+
+		if (qaAng.x < -89.0f)
+			ret.x = -89.0f;
+
+		if (qaAng.y > 180.0f)
+			ret.y = qaAng.y - 360.0f;
+
+		if (qaAng.y < -180.0f)
+			ret.y = qaAng.y + 360.0f;
+
+		ret.z = 0;
+
+		return ret;
+	}
 };
 
 void VectorCopy(const Vector& src, Vector& dst);
