@@ -206,6 +206,7 @@
     <ClInclude Include="sdk\Address.h" />
     <ClInclude Include="sdk\CBaseEntity.h" />
     <ClInclude Include="sdk\cmove.h" />
+    <ClInclude Include="sdk\convar.h" />
     <ClInclude Include="sdk\HookBase.h" />
     <ClInclude Include="sdk\InputManager.h" />
     <ClInclude Include="sdk\InterfaceManager.hpp" />

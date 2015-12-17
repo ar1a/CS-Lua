@@ -14,3 +14,5 @@ public:
 extern void* g_pClient;
 
 extern void* g_pClientMode;
+
+extern void* g_pViewRender;

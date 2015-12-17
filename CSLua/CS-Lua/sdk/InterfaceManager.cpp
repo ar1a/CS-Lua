@@ -10,9 +10,11 @@
 #include "interface\EngineTrace.h"
 #include "interface\Panel.h"
 #include "interface\Surface.h"
+#include "sigscan.h"
 
 void* g_pClient;
 void* g_pClientMode;
+void* g_pViewRender;
 void InterfaceManager::GetInterfaces()
 {
 	g_pClient = GetInterface("client.dll", "VClient");
@@ -24,17 +26,18 @@ void InterfaceManager::GetInterfaces()
 	g_pEngineTrace = (SDKTrace*)GetInterface("engine.dll", "EngineTraceClient");
 	g_pPanel = (CPanel*)GetInterface("vgui2.dll", "VGUI_Panel");
 	g_pSurface = (CSurface*)GetInterface("vguimatsurface.dll", "VGUI_Surface");
+	
 
 	Address CDLLTable = ((Address)g_pClient).To<DWORD*>();
 
 	Address pShutdown = (CDLLTable.As<DWORD*>())[4];
 	g_pClientMode = *pShutdown.GetOffset(0xF2).To<DWORD**>();
 	printf("Clientmode found 0x%X\n", g_pClientMode);
+	SigScan clientsig("client.dll");
+	g_pGlobals = *(CGlobals**)(clientsig.Scan("\xA1????\x5F\x8B\x40\x10") + 0x1);
+	g_pViewRender = **(void***)((DWORD)clientsig.Scan("\xFF\x50\x14\xE8????\x5D") - 7);
 
-
-	Address HudUpdate = (CDLLTable.As<DWORD*>())[11];
-	g_pGlobals = HudUpdate.GetOffset(0x10).To<CGlobals*>(); //pGlobals
-	printf("Globals found 0x%X\n", g_pGlobals);
+	
 }
 
 void* InterfaceManager::GetInterface(char * modulename, char * interfacename)

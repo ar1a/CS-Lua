@@ -61,6 +61,29 @@ public:
 	{
 		return m_pEnt;
 	}
+
+	int GetAmmo()
+	{
+		CBaseEntity* weapon = g_pClientEntList->GetClientEntityFromHandle(m_pEnt->GetWeapon());
+		if (!weapon) return -1;
+		return weapon->GetClip();
+	}
+	int GetBackupAmmo()
+	{
+		CBaseEntity* weapon = g_pClientEntList->GetClientEntityFromHandle(m_pEnt->GetWeapon());
+		if (!weapon) return -1;
+		return weapon->GetClipReserve();
+	}
+
+	int GetArmor()
+	{
+		return m_pEnt->GetArmor();
+	}
+
+	int GetIndex()
+	{
+		return m_pEnt->GetIndex();
+	}
 private:
 	CBaseEntity* m_pEnt;
 };

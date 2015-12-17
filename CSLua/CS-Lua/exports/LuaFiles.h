@@ -26,13 +26,10 @@ hooks[event][id] = nil \
 end \
  \
 function hook.Call(event, ...) \
+local retn \
 for k, v in pairs(hooks[event]) do \
-local success, err = pcall(v, ...) \
- \
-if not success then \
-print(err) \
-hooks[event][k] = nil \
+if v ~= nil then retn = v(...) end \
 end \
-end \
+return retn \
 end \
 ");

@@ -15,6 +15,7 @@
 #include "exports\LuaFiles.h"
 #include "sdk\interface\Panel.h"
 #include "Drawing.h"
+#include "sdk\interface\Globals.h"
 
 LUAInterfaces g_Interfaces;
 LUAUtils g_Utils;
@@ -129,6 +130,10 @@ void RegEverything(lua_State* L)
 				.addFunction("GetTeam", &LUAEntity::GetTeam)
 				.addFunction("GetPunch", &LUAEntity::GetPunch)
 				.addFunction("IsReal", &LUAEntity::IsReal)
+				.addFunction("GetAmmo", &LUAEntity::GetAmmo)
+				.addFunction("GetAmmoReserve", &LUAEntity::GetBackupAmmo)
+				.addFunction("GetArmor", &LUAEntity::GetArmor)
+				.addFunction("GetIndex", &LUAEntity::GetIndex)
 			.endClass()
 			.beginClass<LUAEntityList>("EntityList")
 				.addFunction("GetEntity", &LUAEntityList::GetEntity)
@@ -198,12 +203,77 @@ bool Keyboard(const KeyData &data)
 
 	return false;
 }
+struct CViewSetup
+{
+	char _0x0000[16];
+	__int32 x;
+	__int32 x_old;
+	__int32 y;
+	__int32 y_old;
+	__int32 width;
+	__int32    width_old;
+	__int32 height;
+	__int32    height_old;
+	char _0x0030[128];
+	float fov;
+	float fovViewmodel;
+	Vector origin;
+	Vector angles;
+	float zNear;
+	float zFar;
+	float zNearViewmodel;
+	float zFarViewmodel;
+	float m_flAspectRatio;
+	float m_flNearBlurDepth;
+	float m_flNearFocusDepth;
+	float m_flFarFocusDepth;
+	float m_flFarBlurDepth;
+	float m_flNearBlurRadius;
+	float m_flFarBlurRadius;
+	float m_nDoFQuality;
+	__int32 m_nMotionBlurMode;
+	char _0x0104[68];
+	__int32 m_EdgeBlur;
+};
+
+typedef void(__thiscall* RenderViewFn)(void*, CViewSetup &setup, CViewSetup &hudViewSetup, int nClearFlags, int whatToDraw);
+RenderViewFn oRenderView;
+
+void __fastcall hkRenderView(void* thisptr, void*, CViewSetup &setup, CViewSetup &hudViewSetup, int nClearFlags, int whatToDraw)
+{
+	LOCKLUA();
+	using namespace luabridge;
+	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
+	bool shoulddrawhud = true;
+	if (hook["Call"].isFunction())
+	{
+		try {
+			shoulddrawhud = hook["Call"]("ShouldDrawHud").cast<bool>();
+		}
+		catch (LuaException const& e)
+		{
+			//If this is called then there was no hook for "ShouldDrawHud" registered. This isn't an issue.
+		}
+	}
+	else
+	{
+		printf("ERR: PT - hook.Call not found!\n");
+	}
+
+	CViewSetup fakesetup;
+	memset(&fakesetup, 0, sizeof CViewSetup);
+	setup.fovViewmodel = 90.f;
+	oRenderView(thisptr, setup, shoulddrawhud ? hudViewSetup : fakesetup, nClearFlags, whatToDraw);
+}
+
 
 typedef void(__thiscall* PaintTraverseFn)(void*,unsigned int, bool, bool);
 PaintTraverseFn oPaintTraverse;
-void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bool c)
+void __fastcall hkPaintTraverse(void* thisptr,void*, unsigned int a, bool b, bool c)
 {
-	oPaintTraverse(thisptr, a, b, c);
+	if(!GetAsyncKeyState(VK_NEXT))
+		oPaintTraverse(thisptr, a, b, c);
+
 	static unsigned int mstp = 0;
 	if (!mstp)
 	{
@@ -237,6 +307,11 @@ void __fastcall hkPaintTraverse(void* thisptr, void*, unsigned int a, bool b, bo
 
 	}
 
+	if (GetAsyncKeyState(VK_PRIOR)) {
+		const char *pName = g_pPanel->GetName(a);
+		printf("[%d] %s\n", g_pGlobals->framecount, pName);
+	}
+
 }
 
 void ResetEnvironment()
@@ -258,10 +333,16 @@ void StartThread()
 
 	LOCKLUA();
 
-	VMT* client = new VMT(g_pClientMode);
+	VMT* clientmode = new VMT(g_pClientMode);
+	clientmode->init();
+	clientmode->setTableHook();
+	clientmode->hookFunction(24, hkCreateMove); 
+
+
+	VMT* client = new VMT(g_pViewRender);
 	client->init();
 	client->setTableHook();
-	client->hookFunction(24, hkCreateMove);
+	oRenderView = (RenderViewFn)client->hookFunction(6, hkRenderView);
 
 	VMT* panel = new VMT(g_pPanel);
 	panel->init();

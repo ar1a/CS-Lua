@@ -49,6 +49,10 @@ public:
 	GETNETVAR(int,  GetHitboxSet, 0x9F4);
 	GETNETVAR(Vector, GetPunch, 0x2FF8);
 	GETNETVAR(int, GetTickBase, 0x33EC);
+	GETNETVAR(HANDLE, GetWeapon, 0x2EC8);
+	GETNETVAR(int, GetClip, 0x31D4); //GUN ONLY
+	GETNETVAR(int, GetClipReserve, 0x31DC);
+	GETNETVAR(int, GetArmor, 0xA8C4);
 
 	void SetFlags(unsigned int flag)
 	{

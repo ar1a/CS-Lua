@@ -38,7 +38,7 @@ bool __stdcall hkCreateMove(float frametime, CUserCmd* cmd)
 	if (hook["Call"].isFunction())
 	{
 		try {
-			hook["Call"]("CreateMove", LuaUserCmd(cmd));
+			hook["Call"]("CreateMove", LuaUserCmd(cmd), frametime);
 		}
 		catch (LuaException const& e)
 		{
