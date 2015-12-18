@@ -457,7 +457,7 @@ void StartThread()
  | |     \\___ \\ | |   | | | |/ _` | \\ \\ / // / \n \
  | |____ ____) || |___| |_| | (_| |  \\ V // /_ \n \
   \\_____|_____(_)______\\__,_|\\__,_|   \\_/|____|\n\n\n");
-	Msg("CS:Lua v2 loaded! Enjoy!\n");
+	Msg("CS:Lua v2.2 loaded! Enjoy!\n");
 	//g_pLuaEngine->ExecuteFile("hook.lua");
 	g_pLuaEngine->ExecuteString(HOOK_CODE.c_str());
 	Msg("---------------------\nhook.lua loaded\n---------------------\n");
