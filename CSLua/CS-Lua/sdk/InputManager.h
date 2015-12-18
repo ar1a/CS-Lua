@@ -105,6 +105,10 @@ struct MouseData {
 	{
 		return Vec2(pos.x, pos.y);
 	}
+	unsigned int GetButton() const
+	{
+		return (unsigned int)button;
+	}
 };
 
 struct KeyData {
