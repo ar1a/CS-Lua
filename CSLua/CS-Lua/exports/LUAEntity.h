@@ -49,7 +49,7 @@ public:
 
 	Vector GetPunch()
 	{
-		return m_pEnt->GetPunch();
+		return m_pEnt->GetAimPunch();
 	}
 
 	bool IsReal()
@@ -83,6 +83,13 @@ public:
 	int GetIndex()
 	{
 		return m_pEnt->GetIndex();
+	}
+
+	std::string GetName()
+	{
+		player_info_t info;
+		g_pEngine->GetPlayerInfo(GetIndex(), &info);
+		return std::string(info.name);
 	}
 private:
 	CBaseEntity* m_pEnt;

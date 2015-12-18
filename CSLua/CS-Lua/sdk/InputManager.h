@@ -3,6 +3,7 @@
 // Windows
 #include <Windows.h>
 #include <vector>
+#include "Vector.h"
 
 struct CUR {
 	int x, y;
@@ -94,6 +95,16 @@ struct MouseData {
 	MouseButton button;
 	CUR pos;
 	int delta;
+
+	bool IsDown() const
+	{
+		return event == MouseEvent::Down;
+	}
+
+	Vec2 GetPos() const
+	{
+		return Vec2(pos.x, pos.y);
+	}
 };
 
 struct KeyData {

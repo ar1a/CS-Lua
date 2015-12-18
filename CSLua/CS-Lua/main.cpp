@@ -67,6 +67,72 @@ void Msg(char const* msg)
 	oMsg(buffer, list);
 }
 
+typedef void(__thiscall* FrameStageNotifyFn)(void*, unsigned int);
+FrameStageNotifyFn oFrameStageNotify;
+enum ClientFrameStage_t {
+	FRAME_UNDEFINED = -1,			// (haven't run any frames yet)
+	FRAME_START,
+
+	// A network packet is being recieved
+	FRAME_NET_UPDATE_START,
+	// Data has been received and we're going to start calling PostDataUpdate
+	FRAME_NET_UPDATE_POSTDATAUPDATE_START,
+	// Data has been received and we've called PostDataUpdate on all data recipients
+	FRAME_NET_UPDATE_POSTDATAUPDATE_END,
+	// We've received all packets, we can now do interpolation, prediction, etc..
+	FRAME_NET_UPDATE_END,
+
+	// We're about to start rendering the scene
+	FRAME_RENDER_START,
+	// We've finished rendering the scene.
+	FRAME_RENDER_END
+};
+
+void __fastcall hkFrameStageNotify(void* thisptr, void*, unsigned int type)
+{
+	LOCKLUA();
+	Vector oldviewpunch;
+	Vector oldaimpunch;
+	bool shouldnullview = false;
+	if (type == FRAME_RENDER_START) {
+
+		using namespace luabridge;
+		LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
+		if (hook["Call"].isFunction())
+		{
+			try {
+				shouldnullview = hook["Call"]("ShouldRemoveViewPunch").cast<bool>();
+			}
+			catch (LuaException const& e)
+			{
+				//If this is called then there was no hook for "ShouldRemoveViewPunch" registered. This isn't an issue.
+			}
+		}
+		else
+		{
+			printf("ERR: PT - hook.Call not found!\n");
+		}
+
+		if (shouldnullview) {
+			CBaseEntity* ent = (CBaseEntity*)g_Utils.LocalPlayer();
+			if (ent) {
+				oldviewpunch = *(Vector*)(ent + 0x4BB8 + 0x64);
+				oldaimpunch = *(Vector*)(ent + 0x4BB8 + 0x70);
+
+				*(Vector*)(ent + 0x4BB8 + 0x64) = Vector(0, 0, 0);
+				*(Vector*)(ent + 0x4BB8 + 0x70) = Vector(0, 0, 0);
+			}
+		}
+	}
+	oFrameStageNotify(thisptr, type);
+	if (shouldnullview) {
+		CBaseEntity* ent = (CBaseEntity*)g_Utils.LocalPlayer();
+		if (ent) {
+			*(Vector*)(ent + 0x4BB8 + 0x64) = oldviewpunch;
+			*(Vector*)(ent + 0x4BB8 + 0x70) = oldaimpunch;
+		}
+	}
+}
 
 void RegEverything(lua_State* L)
 {
@@ -134,6 +200,7 @@ void RegEverything(lua_State* L)
 				.addFunction("GetAmmoReserve", &LUAEntity::GetBackupAmmo)
 				.addFunction("GetArmor", &LUAEntity::GetArmor)
 				.addFunction("GetIndex", &LUAEntity::GetIndex)
+				.addFunction("Nick", &LUAEntity::GetName)
 			.endClass()
 			.beginClass<LUAEntityList>("EntityList")
 				.addFunction("GetEntity", &LUAEntityList::GetEntity)
@@ -153,12 +220,18 @@ void RegEverything(lua_State* L)
 			.beginClass<LUAUtils>("__Utils")
 				.addFunction("IsPlayer", &LUAUtils::IsPlayer)
 				.addFunction("GetHitboxPos", &LUAUtils::GetHitboxPosition)
+				.addFunction("LocalPlayer", &LUAUtils::LocalPlayer)
 			.endClass()
 			.beginClass<KeyData>("KeyData")
 				.addData("key", &KeyData::key, false)
 				.addProperty("down", &KeyData::IsDown)
 				.addProperty("held", &KeyData::IsHeld)
 				.addData("processed", &KeyData::processed, false)
+			.endClass()
+			.beginClass<MouseData>("MouseData")
+				.addData("button", &MouseData::button, false)
+				.addProperty("down", &MouseData::IsDown)
+				.addProperty("pos", &MouseData::GetPos)
 			.endClass()
 			.beginClass<CDrawing>("__Drawing")
 				.addFunction("DrawString", &CDrawing::DrawString)
@@ -199,6 +272,29 @@ bool Keyboard(const KeyData &data)
 		lock.lock();
 		g_pLuaEngine->ExecuteFile("exec.lua");
 		lock.unlock();
+	}
+
+	return false;
+}
+
+bool Mouse(const MouseData& data)
+{
+	LOCKLUA();
+	using namespace luabridge;
+	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
+	if (hook["Call"].isFunction())
+	{
+		try {
+			hook["Call"]("Mouse", data);
+		}
+		catch (LuaException const& e)
+		{
+			//If this is called then there was no hook for "Key" registered. This isn't an issue.
+		}
+	}
+	else
+	{
+		printf("ERR: KB -  hook.Call not found!\n");
 	}
 
 	return false;
@@ -338,11 +434,15 @@ void StartThread()
 	clientmode->setTableHook();
 	clientmode->hookFunction(24, hkCreateMove); 
 
-
-	VMT* client = new VMT(g_pViewRender);
+	VMT* client = new VMT(g_pClient);
 	client->init();
 	client->setTableHook();
-	oRenderView = (RenderViewFn)client->hookFunction(6, hkRenderView);
+	oFrameStageNotify =  (FrameStageNotifyFn)client->hookFunction(36, hkFrameStageNotify);
+
+	VMT* viewrender = new VMT(g_pViewRender);
+	viewrender->init();
+	viewrender->setTableHook();
+	oRenderView = (RenderViewFn)viewrender->hookFunction(6, hkRenderView);
 
 	VMT* panel = new VMT(g_pPanel);
 	panel->init();
@@ -364,6 +464,7 @@ void StartThread()
 	g_pLuaEngine->ExecuteFile("init.lua");
 	Msg("---------------------\ninit.lua loaded\n---------------------\n");
 	inputmanager::AddKeyboardCallback(Keyboard);
+	inputmanager::AddMouseCallback(Mouse);
 }
 
 void InitConsole(char* name)

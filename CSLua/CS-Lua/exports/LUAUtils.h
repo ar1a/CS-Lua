@@ -46,6 +46,11 @@ public:
 		return hitboxpos;
 	}
 
+	LUAEntity LocalPlayer()
+	{
+		return LUAEntity(g_pClientEntList->GetClientEntity(g_pEngine->GetLocalPlayer()));
+	}
+
 private:
 	__forceinline float DotProduct(const Vector v1, const float* v2)
 	{
