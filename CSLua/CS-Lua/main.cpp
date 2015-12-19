@@ -16,6 +16,9 @@
 #include "sdk\interface\Panel.h"
 #include "Drawing.h"
 #include "sdk\interface\Globals.h"
+#include "sdk\Console.h"
+
+ConsoleManager g_c;
 
 LUAInterfaces g_Interfaces;
 LUAUtils g_Utils;
@@ -249,7 +252,7 @@ void RegEverything(lua_State* L)
 
 bool Keyboard(const KeyData &data)
 {
-	std::unique_lock<std::mutex> lock(g_pLuaEngine->m);
+	LOCKLUA();
 	using namespace luabridge;
 	LuaRef hook = getGlobal(g_pLuaEngine->L(), "hook");
 	if (hook["Call"].isFunction())
@@ -267,12 +270,6 @@ bool Keyboard(const KeyData &data)
 		printf("ERR: KB -  hook.Call not found!\n");
 	}
 
-	lock.unlock();
-	if (data.IsDown() && data.key == VK_DELETE) {
-		lock.lock();
-		g_pLuaEngine->ExecuteFile("exec.lua");
-		lock.unlock();
-	}
 
 	return false;
 }
@@ -410,24 +407,29 @@ void __fastcall hkPaintTraverse(void* thisptr,void*, unsigned int a, bool b, boo
 
 }
 
-void ResetEnvironment()
+void loadscript(std::vector<std::string> args)
 {
-	g_pLuaEngine->Reset();
-	g_pLuaEngine->ExecuteString(HOOK_CODE.c_str());
-	Msg("---------------------\nhook.lua loaded\n---------------------\n");
-	g_pLuaEngine->ExecuteFile("init.lua");
-	Msg("---------------------\ninit.lua loaded\n---------------------\n");
-	RegEverything(g_pLuaEngine->L());
+	LOCKLUA();
+	g_pLuaEngine->ExecuteFile(args[1].c_str());
+	printf("Executed %s!\n", args[1].c_str());
 }
+void StartThread();
+void reset(std::vector<std::string> args)
+{
+	StartThread();
+}
+
 void StartThread()
 {
+	LOCKLUA();
+	g_pLuaEngine->Reset();
 	inputmanager::Init();
+	inputmanager::backend::keycallbacks.clear();
+	inputmanager::backend::mcallbacks.clear();
 
 	InterfaceManager::GetInterfaces();
 
 	g_pEngine->ClientCmd("clear");
-
-	LOCKLUA();
 
 	VMT* clientmode = new VMT(g_pClientMode);
 	clientmode->init();
@@ -467,6 +469,17 @@ void StartThread()
 	inputmanager::AddMouseCallback(Mouse);
 }
 
+void ConsoleThread()
+{
+	g_c.AddItem("load", loadscript);
+	g_c.AddItem("reset", reset);
+	while (1)
+	{
+		g_c.Think();
+	}
+}
+
+
 void InitConsole(char* name)
 {
 	AllocConsole();
@@ -487,6 +500,7 @@ BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reser
 	{
 		InitConsole("LUA");
 		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)StartThread, 0, 0, 0);
+		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ConsoleThread, 0, 0, 0);
 	}
 	return TRUE;
 }

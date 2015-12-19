@@ -21,8 +21,8 @@ public:
 
 	void Reset()
 	{
-		//if(m_L)
-		//	lua_close(m_L);
+		if(m_L)
+			lua_close(m_L);
 		m_L = luaL_newstate();
 		luaL_openlibs(m_L);
 	}
